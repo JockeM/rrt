@@ -1,11 +1,18 @@
 pub type Vec3 = cgmath::Vector3<f64>;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Sphere {
     pub origin: Vec3,
     pub radius: f64,
     pub color: [u8; 4],
 }
 
+impl Sphere {
+    pub fn get_normal(&self, point: &Vec3) -> Vec3 {
+        return (point - self.origin) * (-1.0 / (self.radius));
+    }
+}
+#[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
@@ -15,20 +22,8 @@ impl Ray {
     pub fn get_hitpoint(self, time: f64) -> Vec3 {
         return self.origin + (time * self.direction);
     }
-    /*
-    float hit_sphere(const vec3& center, float radius, const ray& r){
-    vec3 oc = r.origin() - center;
-    float a = dot(r.direction(), r.direction());
-    float b = 2.0 * dot(oc, r.direction());
-    float c = dot(oc,oc) - radius*radius;
-    float discriminant = b*b - 4*a*c;
-    if(discriminant < 0.0){
-    return -1.0;
-    }
-    else{
-    float numerator = -b - sqrt(discriminant);*/
 
-    pub fn intersects_sphere(&self, sphere: &Sphere) -> Option<f64> {
+    pub fn intersects_sphere(self, sphere: Sphere) -> Option<f64> {
         use crate::cgmath::InnerSpace;
 
         let delta = self.origin - sphere.origin;

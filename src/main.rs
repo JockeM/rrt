@@ -1,6 +1,8 @@
 extern crate cgmath;
 extern crate image;
 
+mod test;
+
 mod shape;
 use shape::*;
 
@@ -8,8 +10,6 @@ const WIDTH: u32 = 400;
 const HEIGHT: u32 = 400;
 
 fn main() {
-    let mut buffer: Vec<u8> = std::vec::Vec::new();
-
     let spheres = vec![
         shape::Sphere {
             origin: Vec3 {
@@ -30,7 +30,7 @@ fn main() {
             color: [0, 100, 0, 255],
         },
     ];
-
+    let mut buffer: Vec<u8> = vec![];
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
             let color = get_color_from_cord(x as f64, y as f64, &spheres);
@@ -44,6 +44,7 @@ fn main() {
 }
 
 fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>) -> [u8; 4] {
+    use cgmath::InnerSpace;
     let ray = Ray {
         origin: Vec3 { x, y, z: 0.0 },
         direction: Vec3 {
@@ -52,10 +53,21 @@ fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>) -> [u8; 4] {
             z: 1.0,
         },
     };
+
     for s in spheres.iter() {
-        let hit = ray.intersects_sphere(s);
+        let hit = ray.intersects_sphere(*s);
         match hit {
-            Some(_) => return s.color,
+            Some(time) => {
+                let hit = ray.get_hitpoint(time);
+                let normal = s.get_normal(&hit);
+                let facing_ratio = normal.dot(ray.direction) * 0.8;
+                return [
+                    (s.color[0] as f64 * facing_ratio) as u8,
+                    (s.color[1] as f64 * facing_ratio) as u8,
+                    (s.color[2] as f64 * facing_ratio) as u8,
+                    255,
+                ];
+            }
             None => (),
         }
     }
