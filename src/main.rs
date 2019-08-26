@@ -27,13 +27,23 @@ fn main() {
                 z: 500.0,
             },
             radius: 100.0,
-            color: [0, 100, 0, 255],
+            color: [10, 200, 10, 255],
         },
     ];
+
+    let lights = vec![shape::Light {
+        origin: Vec3 {
+            x: 0.0,
+            y: 500.0,
+            z: 50.0,
+        },
+        color: [255, 255, 255, 255],
+    }];
+
     let mut buffer: Vec<u8> = vec![];
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
-            let color = get_color_from_cord(x as f64, y as f64, &spheres);
+            let color = get_color_from_cord(x as f64, y as f64, &spheres, &lights);
             buffer.push(color[0]);
             buffer.push(color[1]);
             buffer.push(color[2]);
@@ -43,7 +53,7 @@ fn main() {
     image::save_buffer("output.png", &buffer, WIDTH, HEIGHT, image::RGB(8)).unwrap();
 }
 
-fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>) -> [u8; 4] {
+fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> [u8; 4] {
     use cgmath::InnerSpace;
     let ray = Ray {
         origin: Vec3 { x, y, z: 0.0 },
@@ -54,19 +64,47 @@ fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>) -> [u8; 4] {
         },
     };
 
-    for s in spheres.iter() {
-        let hit = ray.intersects_sphere(*s);
+    for sphere in spheres.iter() {
+        let hit = ray.intersects_sphere(*sphere);
         match hit {
             Some(time) => {
-                let hit = ray.get_hitpoint(time);
-                let normal = s.get_normal(&hit);
+                let mut light_thing = 0u8;
+                let mut color = sphere.color;
+                let hit = ray.get_hitpoint(time - 0.1);
+                let normal = sphere.get_normal(&hit);
                 let facing_ratio = normal.dot(ray.direction) * 0.8;
-                return [
-                    (s.color[0] as f64 * facing_ratio) as u8,
-                    (s.color[1] as f64 * facing_ratio) as u8,
-                    (s.color[2] as f64 * facing_ratio) as u8,
-                    255,
-                ];
+                for light in lights.iter() {
+                    let direction = (hit - light.origin).normalize();
+                    let ray = Ray {
+                        origin: hit,
+                        direction,
+                    };
+
+                    fn did_hit(ray: Ray, spheres: &Vec<Sphere>) -> bool {
+                        for sphere in spheres.iter() {
+                            let hit = ray.intersects_sphere(*sphere);
+                            match hit {
+                                Some(_) => return true,
+                                None => (),
+                            }
+                        }
+                        return false;
+                    }
+
+                    if did_hit(ray, spheres) {
+                        color[0] -= 10;
+                        color[1] -= 10;
+                        color[2] -= 10;
+                        /*light_thing[0] = light.color[0] / 2;
+                        light_thing[1] = light.color[1] / 2;
+                        light_thing[2] = light.color[2] / 2;*/
+                    }
+                }
+                color[0] = (color[0] as f64 * facing_ratio) as u8;
+                color[1] = (color[1] as f64 * facing_ratio) as u8;
+                color[2] = (color[2] as f64 * facing_ratio) as u8;
+
+                return color;
             }
             None => (),
         }

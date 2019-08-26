@@ -7,11 +7,18 @@ pub struct Sphere {
     pub color: [u8; 4],
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct Light {
+    pub origin: Vec3,
+    pub color: [u8; 4],
+}
+
 impl Sphere {
     pub fn get_normal(&self, point: &Vec3) -> Vec3 {
         return (point - self.origin) * (-1.0 / (self.radius));
     }
 }
+
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,
