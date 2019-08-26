@@ -1,6 +1,9 @@
+//type Vec3 = cgmath::Vector3<f64>;
+
 #[cfg(test)]
 mod tests {
-    use crate::shape::*;
+    use crate::objects::*;
+    use crate::ray::*;
 
     #[test]
     fn test_should_hit_with_5_distance() {

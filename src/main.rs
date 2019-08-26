@@ -3,15 +3,20 @@ extern crate image;
 
 mod test;
 
-mod shape;
-use shape::*;
+mod ray;
+use ray::*;
+
+mod objects;
+use objects::*;
 
 const WIDTH: u32 = 400;
 const HEIGHT: u32 = 400;
 
+pub type Vec3 = cgmath::Vector3<f64>;
+
 fn main() {
     let spheres = vec![
-        shape::Sphere {
+        Sphere {
             origin: Vec3 {
                 x: 100.0,
                 y: 100.0,
@@ -20,7 +25,7 @@ fn main() {
             radius: 10.0,
             color: [50, 255, 255, 255],
         },
-        shape::Sphere {
+        Sphere {
             origin: Vec3 {
                 x: 200.0,
                 y: 200.0,
@@ -31,7 +36,7 @@ fn main() {
         },
     ];
 
-    let lights = vec![shape::Light {
+    let lights = vec![Light {
         origin: Vec3 {
             x: 0.0,
             y: 500.0,
@@ -68,7 +73,6 @@ fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>, lights: &Vec<Light
         let hit = ray.intersects_sphere(*sphere);
         match hit {
             Some(time) => {
-                let mut light_thing = 0u8;
                 let mut color = sphere.color;
                 let hit = ray.get_hitpoint(time - 0.1);
                 let normal = sphere.get_normal(&hit);
@@ -91,16 +95,13 @@ fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>, lights: &Vec<Light
                         return false;
                     }
 
-                    if did_hit(ray, spheres) {
-                        color[0] -= 10;
-                        color[1] -= 10;
-                        color[2] -= 10;
-                        /*light_thing[0] = light.color[0] / 2;
-                        light_thing[1] = light.color[1] / 2;
-                        light_thing[2] = light.color[2] / 2;*/
+                    if !did_hit(ray, spheres) {
+                        color[0] /= 2;
+                        color[1] /= 2;
+                        color[2] /= 2;
                     }
                 }
-                color[0] = (color[0] as f64 * facing_ratio) as u8;
+                color[0] = (color[0] as f64 * facing_ratio) as u8; //make a color struct or somethint o easier do math ops
                 color[1] = (color[1] as f64 * facing_ratio) as u8;
                 color[2] = (color[2] as f64 * facing_ratio) as u8;
 
