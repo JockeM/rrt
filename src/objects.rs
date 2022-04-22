@@ -1,6 +1,6 @@
 pub type Vec3 = cgmath::Vector3<f64>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Sphere {
     pub origin: Vec3,
     pub radius: f64,
