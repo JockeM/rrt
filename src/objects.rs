@@ -15,6 +15,6 @@ pub struct Light {
 
 impl Sphere {
     pub fn get_normal(&self, point: &Vec3) -> Vec3 {
-        return (point - self.origin) * (-1.0 / (self.radius));
+        (point - self.origin) * (-1.0 / (self.radius))
     }
 }
