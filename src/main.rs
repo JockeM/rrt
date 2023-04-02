@@ -71,12 +71,7 @@ fn main() {
     image::save_buffer("output.png", &buffer, WIDTH, HEIGHT, image::RGB(8)).unwrap();
 }
 
-fn get_color_from_cord(
-    x: f64,
-    y: f64,
-    spheres: &Vec<Sphere>,
-    _lights: &Vec<Light>,
-) -> [u8; 4] {
+fn get_color_from_cord(x: f64, y: f64, spheres: &Vec<Sphere>, _lights: &Vec<Light>) -> [u8; 4] {
     let ray = Ray {
         origin: Vec3 { x, y, z: 0.0 },
         direction: Vec3 {
@@ -91,7 +86,7 @@ fn get_color_from_cord(
     for sphere in spheres.iter() {
         let hit = ray.intersects_sphere(*sphere);
         if let Some(time) = hit {
-            let hit = ray.get_hitpoint(time - 0.1);
+            let hit = ray.get_hit(time - 0.1);
             let normal = sphere.get_normal(&hit);
             let facing_ratio = normal.dot(ray.direction) * 0.8;
             return color_lerp(sphere.color, BACKROUND_COLOR, facing_ratio);
@@ -115,9 +110,9 @@ fn _get_color_with_shadow(
         };
 
         fn is_hit(ray: Ray, spheres: &Vec<Sphere>) -> bool {
-            spheres.iter().any(|sphere| {
-                ray.intersects_sphere(*sphere).is_some()
-            })
+            spheres
+                .iter()
+                .any(|sphere| ray.intersects_sphere(*sphere).is_some())
         }
 
         if !is_hit(ray, spheres) {
